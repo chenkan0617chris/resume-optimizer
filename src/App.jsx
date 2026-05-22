@@ -5,6 +5,7 @@ import Step1ResumeInput from './components/steps/Step1_ResumeInput.jsx';
 import Step2JDInput from './components/steps/Step2_JDInput.jsx';
 import Step3Analysis from './components/steps/Step3_Analysis.jsx';
 import Step4Export from './components/steps/Step4_Export.jsx';
+import SettingsPage from './components/settings/SettingsPage.jsx';
 import ApiKeyModal from './components/ui/ApiKeyModal.jsx';
 import ToastContainer from './components/ui/Toast.jsx';
 import { useAppStore } from './store/appStore.js';
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/step/2" element={<Step2JDInput />} />
           <Route path="/step/3" element={<Step3Analysis />} />
           <Route path="/step/4" element={<Step4Export />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/step/1" replace />} />
         </Routes>
       </main>

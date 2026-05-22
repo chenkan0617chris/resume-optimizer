@@ -18,6 +18,12 @@ export default function StepIndicator() {
   const t = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Hide the step indicator on non-step routes (e.g. /settings).
+  if (!/^\/step\/\d/.test(location.pathname)) {
+    return null;
+  }
+
   const current = parseCurrentStep(location.pathname);
 
   return (

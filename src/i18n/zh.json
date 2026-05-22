@@ -217,5 +217,43 @@
   "editor.markdown": "Markdown",
   "editor.preview": "预览",
   "editor.placeholder": "你的简历 Markdown 将在此显示...",
-  "editor.empty": "暂无内容可预览。"
+  "editor.empty": "暂无内容可预览。",
+
+  "settings.heading": "设置",
+  "settings.subheading": "管理你的 AI 提供商和偏好设置。",
+  "settings.tabs.apiKeys": "API 密钥",
+  "settings.apiKeys.intro": "为一个或多个提供商添加 API 密钥，选择当前使用哪个，随时可以切换。",
+  "settings.apiKeys.privacyHeading": "隐私",
+  "settings.apiKeys.privacyBody": "密钥仅保存在当前标签页的 session storage 中，仅发送给你所选择的提供商。关闭标签即清除。无代理、无日志、无统计。",
+
+  "settings.providers.useThis": "使用此项",
+  "settings.providers.activeBadge": "当前使用",
+  "settings.providers.apiKey": "API 密钥",
+  "settings.providers.model": "模型",
+  "settings.providers.showKey": "显示",
+  "settings.providers.hideKey": "隐藏",
+  "settings.providers.clearKey": "清除",
+  "settings.providers.getKey": "获取密钥",
+  "settings.providers.keySaved": "密钥已保存（当前会话有效）",
+  "settings.providers.saved": "{name} 密钥已保存",
+  "settings.providers.activated": "已切换为使用 {name}",
+  "settings.providers.activateNeedsKey": "请先添加 {name} 的 API 密钥",
+
+  "settings.providers.anthropic.description": "Anthropic 的 Claude 模型 — 擅长结构化 JSON 与长文本重写。",
+  "settings.providers.openai.description": "OpenAI 的 GPT 模型 — 稳定且广泛可用。",
+  "settings.providers.deepseek.description": "DeepSeek 模型 — 性价比高，推理能力强。",
+
+  "providers.validate.empty": "API 密钥不能为空",
+  "providers.validate.anthropicPrefix": "Anthropic 密钥须以 \"sk-ant-\" 开头",
+  "providers.validate.openaiPrefix": "API 密钥应以 \"sk-\" 开头",
+  "providers.validate.tooShort": "API 密钥长度过短",
+
+  "apiKey.modal.firstUseTitle": "先添加一个 API 密钥",
+  "apiKey.modal.firstUseBody": "本应用需要一个 AI 提供商来分析和重写你的简历，至少添加以下其中之一：",
+  "apiKey.modal.missingTitle": "{name} 暂未配置 API 密钥",
+  "apiKey.modal.missingBody": "请在「设置」中添加 {name} 的密钥，或切换到其他提供商。",
+  "apiKey.modal.goToSettings": "前往设置",
+  "apiKey.modal.bullet.claude": "Claude（Anthropic）— claude-sonnet-4-6",
+  "apiKey.modal.bullet.openai": "OpenAI — gpt-4o",
+  "apiKey.modal.bullet.deepseek": "DeepSeek — deepseek-chat"
 }

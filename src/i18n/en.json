@@ -217,5 +217,43 @@
   "editor.markdown": "Markdown",
   "editor.preview": "Preview",
   "editor.placeholder": "Your resume markdown will appear here...",
-  "editor.empty": "Nothing to preview yet."
+  "editor.empty": "Nothing to preview yet.",
+
+  "settings.heading": "Settings",
+  "settings.subheading": "Manage your AI providers and preferences.",
+  "settings.tabs.apiKeys": "API Keys",
+  "settings.apiKeys.intro": "Add your API keys for one or more providers. Pick which one to use; you can switch any time.",
+  "settings.apiKeys.privacyHeading": "Privacy",
+  "settings.apiKeys.privacyBody": "Keys live only in this tab's session storage and are sent directly to the provider you choose. They are cleared when you close the tab. No proxy, no logging, no analytics.",
+
+  "settings.providers.useThis": "Use this",
+  "settings.providers.activeBadge": "ACTIVE",
+  "settings.providers.apiKey": "API key",
+  "settings.providers.model": "Model",
+  "settings.providers.showKey": "Show",
+  "settings.providers.hideKey": "Hide",
+  "settings.providers.clearKey": "Clear",
+  "settings.providers.getKey": "Get a key",
+  "settings.providers.keySaved": "Key saved for this session",
+  "settings.providers.saved": "{name} key saved",
+  "settings.providers.activated": "Now using {name}",
+  "settings.providers.activateNeedsKey": "Add a {name} API key first",
+
+  "settings.providers.anthropic.description": "Anthropic's Claude models — strong at structured JSON and long-form rewriting.",
+  "settings.providers.openai.description": "OpenAI's GPT models — robust and widely available.",
+  "settings.providers.deepseek.description": "DeepSeek's models — cost-efficient with strong reasoning.",
+
+  "providers.validate.empty": "API key is required",
+  "providers.validate.anthropicPrefix": "Anthropic keys start with \"sk-ant-\"",
+  "providers.validate.openaiPrefix": "API key should start with \"sk-\"",
+  "providers.validate.tooShort": "API key looks too short",
+
+  "apiKey.modal.firstUseTitle": "Set up an API key to get started",
+  "apiKey.modal.firstUseBody": "This app needs an AI provider to analyze and rewrite your resume. Add at least one of:",
+  "apiKey.modal.missingTitle": "No API key for {name}",
+  "apiKey.modal.missingBody": "Add your {name} key, or switch to a different provider, in Settings.",
+  "apiKey.modal.goToSettings": "Go to Settings",
+  "apiKey.modal.bullet.claude": "Claude (Anthropic) — claude-sonnet-4-6",
+  "apiKey.modal.bullet.openai": "OpenAI — gpt-4o",
+  "apiKey.modal.bullet.deepseek": "DeepSeek — deepseek-chat"
 }

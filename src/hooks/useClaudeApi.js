@@ -1,21 +1,26 @@
 // hooks/useClaudeApi.js
-// React hook wrapping claudeClient. Owns the AbortController per call,
-// dispatches loading/success/error to the store, surfaces user-facing
-// toasts (using i18n KEYS — translation happens in the Toast component),
-// and handles the 401 path by clearing the key and reopening the modal.
+// React hook over the multi-provider aiClient. Reads activeProvider /
+// activeKey / activeModel from the store and dispatches accordingly.
+// External interface preserved (`{ analyze, rewrite, cancelCurrent, status, error }`)
+// so existing Step 3 wiring keeps working.
 
 import { useCallback, useRef, useState } from 'react';
-import { useAppStore } from '../store/appStore.js';
 import {
-  analyzeResume,
-  rewriteResume,
+  useAppStore,
+  selectActiveApiKey,
+  selectActiveModel,
+  selectActiveProviderId
+} from '../store/appStore.js';
+import {
+  analyze as dispatchAnalyze,
+  rewrite as dispatchRewrite,
   InvalidApiKeyError,
   RateLimitError,
   TimeoutError,
   NetworkError,
   ServerError,
   MalformedResponseError
-} from '../services/claudeClient.js';
+} from '../services/aiClient.js';
 
 function errorToastPayload(err) {
   if (err instanceof InvalidApiKeyError) {
@@ -40,14 +45,13 @@ function errorToastPayload(err) {
   if (err instanceof MalformedResponseError) {
     return { type: 'error', message: 'errors.malformedResponse' };
   }
-  // AbortError from user cancellation — silent.
   if (err && err.name === 'AbortError') return null;
   return { type: 'error', message: 'errors.unknown' };
 }
 
 export default function useClaudeApi() {
   const controllerRef = useRef(null);
-  const [status, setStatus] = useState('idle'); // idle | loading | streaming | success | error
+  const [status, setStatus] = useState('idle');
   const [error, setError] = useState(null);
 
   const cancelCurrent = useCallback(() => {
@@ -61,9 +65,15 @@ export default function useClaudeApi() {
     }
   }, []);
 
+  const handleMissingKey = useCallback(() => {
+    const store = useAppStore.getState();
+    store.setApiKeyModalOpen(true);
+  }, []);
+
   const handleApiKeyError = useCallback(() => {
     const store = useAppStore.getState();
-    store.clearApiKey();
+    const id = selectActiveProviderId(store);
+    store.clearProviderKey(id);
     store.setApiKeyModalOpen(true);
   }, []);
 
@@ -71,11 +81,13 @@ export default function useClaudeApi() {
     const store = useAppStore.getState();
     const resumeMarkdown = store.resume.markdown;
     const jdText = store.jd.text;
-    const apiKey = store.ui.apiKey;
+    const apiKey = selectActiveApiKey(store);
+    const providerId = selectActiveProviderId(store);
+    const model = selectActiveModel(store);
 
     if (!apiKey) {
-      store.setApiKeyModalOpen(true);
-      const e = new InvalidApiKeyError('No API key');
+      handleMissingKey();
+      const e = new InvalidApiKeyError('No API key for active provider');
       setStatus('error');
       setError(e);
       store.pushToast({ type: 'error', message: 'errors.missingApiKey' });
@@ -89,7 +101,6 @@ export default function useClaudeApi() {
       return null;
     }
 
-    // Cancel any in-flight call first.
     cancelCurrent();
     const controller = new AbortController();
     controllerRef.current = controller;
@@ -99,7 +110,9 @@ export default function useClaudeApi() {
     store.setAnalysis('loading');
 
     try {
-      const data = await analyzeResume({
+      const data = await dispatchAnalyze({
+        providerId,
+        model,
         resumeMarkdown,
         jdText,
         apiKey,
@@ -110,7 +123,6 @@ export default function useClaudeApi() {
       return data;
     } catch (err) {
       if (err && err.name === 'AbortError') {
-        // User cancellation — leave status as is, no toast.
         setStatus('idle');
         store.setAnalysis('idle');
         return null;
@@ -128,17 +140,19 @@ export default function useClaudeApi() {
         controllerRef.current = null;
       }
     }
-  }, [cancelCurrent, handleApiKeyError]);
+  }, [cancelCurrent, handleApiKeyError, handleMissingKey]);
 
   const rewrite = useCallback(async () => {
     const store = useAppStore.getState();
     const resumeMarkdown = store.resume.markdown;
     const jdText = store.jd.text;
-    const apiKey = store.ui.apiKey;
+    const apiKey = selectActiveApiKey(store);
+    const providerId = selectActiveProviderId(store);
+    const model = selectActiveModel(store);
 
     if (!apiKey) {
-      store.setApiKeyModalOpen(true);
-      const e = new InvalidApiKeyError('No API key');
+      handleMissingKey();
+      const e = new InvalidApiKeyError('No API key for active provider');
       setStatus('error');
       setError(e);
       store.pushToast({ type: 'error', message: 'errors.missingApiKey' });
@@ -161,14 +175,14 @@ export default function useClaudeApi() {
     store.startRewrite(resumeMarkdown);
 
     try {
-      const finalText = await rewriteResume({
+      const finalText = await dispatchRewrite({
+        providerId,
+        model,
         resumeMarkdown,
         jdText,
         apiKey,
         signal: controller.signal,
         onChunk: (full) => {
-          // appendRewriteChunk semantics: replace optimized with the
-          // accumulated buffer the SSE parser hands us.
           useAppStore.getState().appendRewriteChunk(full);
         }
       });
@@ -178,13 +192,10 @@ export default function useClaudeApi() {
       return finalText;
     } catch (err) {
       if (err && err.name === 'AbortError') {
-        // User-initiated cancel mid-stream — preserve partial buffer,
-        // mark as idle (no error toast).
         store.setRewriteStatus('idle', null);
         setStatus('idle');
         return null;
       }
-      // Preserve whatever has been written so far in rewrite.optimized.
       setStatus('error');
       setError(err);
       store.setRewriteStatus('error', err);
@@ -198,7 +209,7 @@ export default function useClaudeApi() {
         controllerRef.current = null;
       }
     }
-  }, [cancelCurrent, handleApiKeyError]);
+  }, [cancelCurrent, handleApiKeyError, handleMissingKey]);
 
   return { analyze, rewrite, cancelCurrent, status, error };
 }
