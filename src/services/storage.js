@@ -191,13 +191,51 @@ export function loadUiPrefs() {
   return safeParse(safeGet(localStorage, LS_UI_PREFS_KEY));
 }
 
+// --- Env-var key loader (dev / self-hosted convenience) -----------------
+// Reads VITE_ANTHROPIC_API_KEY, VITE_OPENAI_API_KEY, VITE_DEEPSEEK_API_KEY
+// from import.meta.env so devs can set keys in .env.local without touching
+// the Settings UI. sessionStorage keys override env keys.
+
+function loadEnvKeys() {
+  const out = emptyApiKeys();
+  try {
+    const env = import.meta.env;
+    if (env?.VITE_ANTHROPIC_API_KEY) out.anthropic = env.VITE_ANTHROPIC_API_KEY;
+    if (env?.VITE_OPENAI_API_KEY)    out.openai    = env.VITE_OPENAI_API_KEY;
+    if (env?.VITE_DEEPSEEK_API_KEY)  out.deepseek  = env.VITE_DEEPSEEK_API_KEY;
+  } catch {
+    // non-Vite environments
+  }
+  return out;
+}
+
 // --- Boot-time aggregator -----------------------------------------------
 
 export function initFromStorage() {
+  const envKeys     = loadEnvKeys();
+  const storedKeys  = loadApiKeys();
+
+  // Merge: sessionStorage values win over env vars (user can override in UI)
+  const apiKeys = { ...envKeys };
+  for (const id of PROVIDER_IDS) {
+    if (storedKeys[id] && storedKeys[id].trim()) {
+      apiKeys[id] = storedKeys[id].trim();
+    }
+  }
+
+  // If no explicit active provider is stored, auto-select the first provider
+  // that has a key (env or stored).
+  let activeProvider = loadActiveProvider();
+  if (!activeProvider) {
+    for (const id of PROVIDER_IDS) {
+      if (apiKeys[id]) { activeProvider = id; break; }
+    }
+  }
+
   return {
     resumeDraft: loadResumeDraft(),
-    apiKeys: loadApiKeys(),
-    activeProvider: loadActiveProvider(),
+    apiKeys,
+    activeProvider,
     providerModels: loadProviderModels(),
     uiPrefs: loadUiPrefs()
   };

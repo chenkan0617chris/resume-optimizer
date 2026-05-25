@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useAppStore } from '../../store/appStore.js';
+import { useAppStore, selectActiveApiKey } from '../../store/appStore.js';
 import useI18n from '../../hooks/useI18n.js';
 import useClaudeApi from '../../hooks/useClaudeApi.js';
 
@@ -27,7 +27,7 @@ export default function Step3Analysis() {
   // --- Store reads (scalar selectors) ----------------------------------
   const resumeMarkdown = useAppStore((s) => s.resume.markdown);
   const jdText = useAppStore((s) => s.jd.text);
-  const apiKey = useAppStore((s) => s.ui.apiKey);
+  const apiKey = useAppStore(selectActiveApiKey);
 
   const analysisStatus = useAppStore((s) => s.analysis.status);
   const analysisData = useAppStore((s) => s.analysis.data);

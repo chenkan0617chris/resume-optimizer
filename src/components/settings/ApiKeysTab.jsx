@@ -1,10 +1,7 @@
 // components/settings/ApiKeysTab.jsx
-// Lists each provider (Claude, OpenAI, DeepSeek) in a card. Per card:
-//   - Active radio (only one provider can be active app-wide)
-//   - Provider description + console link
-//   - Masked key input with show/hide toggle + Save button + clear button
-//   - Model dropdown (saves on change)
-//   - Status indicator: green dot when a key is saved, gray otherwise
+// Per-provider card: enter/save/clear API key, pick model, activate provider.
+// Activation uses an explicit button so there is no hidden "disabled" state
+// that blocks the user from switching providers.
 
 import { useState } from 'react';
 import useI18n from '../../hooks/useI18n.js';
@@ -16,7 +13,8 @@ function StatusDot({ on }) {
     <span
       aria-hidden="true"
       className={
-        'inline-block w-2 h-2 rounded-full ' + (on ? 'bg-emerald-500' : 'bg-slate-300')
+        'inline-block w-2 h-2 rounded-full shrink-0 ' +
+        (on ? 'bg-emerald-500' : 'bg-slate-300')
       }
     />
   );
@@ -26,24 +24,22 @@ function ProviderCard({ providerId }) {
   const t = useI18n();
   const provider = PROVIDERS[providerId];
 
-  const storedKey = useAppStore((s) => s.ui.apiKeys[providerId] || '');
-  const storedModel = useAppStore(
-    (s) => s.ui.providerModels[providerId] || provider.defaultModel
-  );
-  const activeProvider = useAppStore((s) => s.ui.activeProvider);
-  const setProviderKey = useAppStore((s) => s.setProviderKey);
+  const storedKey    = useAppStore((s) => s.ui.apiKeys[providerId] || '');
+  const storedModel  = useAppStore((s) => s.ui.providerModels[providerId] || provider.defaultModel);
+  const activeProvider  = useAppStore((s) => s.ui.activeProvider);
+  const setProviderKey  = useAppStore((s) => s.setProviderKey);
   const clearProviderKey = useAppStore((s) => s.clearProviderKey);
   const setActiveProvider = useAppStore((s) => s.setActiveProvider);
-  const setProviderModel = useAppStore((s) => s.setProviderModel);
+  const setProviderModel  = useAppStore((s) => s.setProviderModel);
   const pushToast = useAppStore((s) => s.pushToast);
 
-  const [draft, setDraft] = useState(storedKey);
-  const [showKey, setShowKey] = useState(false);
+  const [draft, setDraft]       = useState(storedKey);
+  const [showKey, setShowKey]   = useState(false);
   const [validationError, setValidationError] = useState(null);
 
-  const isActive = activeProvider === providerId;
-  const hasSavedKey = !!storedKey;
-  const isDirty = draft !== storedKey;
+  const isActive     = activeProvider === providerId;
+  const hasSavedKey  = !!storedKey;
+  const isDirty      = draft !== storedKey;
 
   function onSave() {
     const err = provider.validate(draft);
@@ -53,7 +49,11 @@ function ProviderCard({ providerId }) {
     }
     setValidationError(null);
     setProviderKey(providerId, draft);
-    pushToast({ type: 'success', message: 'settings.providers.saved', vars: { name: provider.shortName } });
+    pushToast({
+      type: 'success',
+      message: 'settings.providers.saved',
+      vars: { name: provider.shortName },
+    });
   }
 
   function onClear() {
@@ -67,7 +67,7 @@ function ProviderCard({ providerId }) {
       pushToast({
         type: 'warning',
         message: 'settings.providers.activateNeedsKey',
-        vars: { name: provider.shortName }
+        vars: { name: provider.shortName },
       });
       return;
     }
@@ -75,61 +75,71 @@ function ProviderCard({ providerId }) {
     pushToast({
       type: 'success',
       message: 'settings.providers.activated',
-      vars: { name: provider.shortName }
+      vars: { name: provider.shortName },
     });
   }
 
   return (
-    <div className={'card ' + (isActive ? 'ring-2 ring-brand' : '')}>
-      <div className="flex items-start justify-between gap-4 mb-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <StatusDot on={hasSavedKey} />
-            <h3 className="text-lg font-semibold text-slate-900">{provider.name}</h3>
-            {isActive && (
-              <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full bg-brand text-white">
-                {t('settings.providers.activeBadge')}
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-slate-500 mt-1">
-            {t(`settings.providers.${providerId}.description`)}{' '}
-            <a
-              href={provider.consoleUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="text-brand underline hover:text-brand-light"
-            >
-              {t('settings.providers.getKey')} →
-            </a>
-          </p>
+    <div
+      className={
+        'card transition-shadow ' +
+        (isActive ? 'ring-2 ring-brand shadow-md' : '')
+      }
+    >
+      {/* ── Header row ─────────────────────────────────────────────── */}
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="flex items-center gap-2 min-w-0">
+          <StatusDot on={hasSavedKey} />
+          <h3 className="text-lg font-semibold text-slate-900 truncate">
+            {provider.name}
+          </h3>
+          {isActive && (
+            <span className="inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-brand text-white shrink-0">
+              {t('settings.providers.activeBadge')}
+            </span>
+          )}
         </div>
 
-        <label className="flex items-center gap-2 text-sm shrink-0 cursor-pointer">
-          <input
-            type="radio"
-            name="activeProvider"
-            checked={isActive}
-            onChange={onMakeActive}
+        {/* Activation button — only show when not already active */}
+        {!isActive && (
+          <button
+            type="button"
+            onClick={onMakeActive}
             disabled={!hasSavedKey}
-            className="accent-brand"
-            aria-label={t('settings.providers.useThis')}
-          />
-          <span className={hasSavedKey ? 'text-slate-700' : 'text-slate-400'}>
+            title={hasSavedKey ? undefined : t('settings.providers.activateNeedsKey', { name: provider.shortName })}
+            className={
+              'btn-secondary shrink-0 ' +
+              (!hasSavedKey ? 'opacity-40 cursor-not-allowed' : '')
+            }
+          >
             {t('settings.providers.useThis')}
-          </span>
-        </label>
+          </button>
+        )}
       </div>
 
+      {/* ── Description + console link ─────────────────────────────── */}
+      <p className="text-sm text-slate-500 mb-4">
+        {t(`settings.providers.${providerId}.description`)}{' '}
+        <a
+          href={provider.consoleUrl}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="text-brand underline hover:text-brand-light"
+        >
+          {t('settings.providers.getKey')} →
+        </a>
+      </p>
+
       <div className="space-y-3">
+        {/* ── API Key input ──────────────────────────────────────────── */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
             {t('settings.providers.apiKey')}
           </label>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <input
               type={showKey ? 'text' : 'password'}
-              className="input flex-1 font-mono text-sm"
+              className="input flex-1 min-w-0 font-mono text-sm"
               placeholder={provider.keyPlaceholder}
               value={draft}
               onChange={(e) => {
@@ -176,6 +186,7 @@ function ProviderCard({ providerId }) {
           )}
         </div>
 
+        {/* ── Model selector ─────────────────────────────────────────── */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
             {t('settings.providers.model')}

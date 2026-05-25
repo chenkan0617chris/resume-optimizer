@@ -22,10 +22,16 @@ export default function ApiKeyModal() {
 
   const provider = PROVIDERS[activeProvider];
 
-  // Any provider configured? (legacy env-key fallback also counts)
+  // Any provider configured? env vars in .env.local also count.
   const envKey = useMemo(() => {
     try {
-      return import.meta.env?.VITE_ANTHROPIC_API_KEY || '';
+      const e = import.meta.env;
+      return (
+        e?.VITE_ANTHROPIC_API_KEY ||
+        e?.VITE_OPENAI_API_KEY    ||
+        e?.VITE_DEEPSEEK_API_KEY  ||
+        ''
+      );
     } catch {
       return '';
     }

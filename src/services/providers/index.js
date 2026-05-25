@@ -80,7 +80,9 @@ export const PROVIDERS = {
     consoleUrl: 'https://platform.deepseek.com/api_keys',
     models: [
       { id: 'deepseek-chat', label: 'DeepSeek Chat (general)' },
-      { id: 'deepseek-reasoner', label: 'DeepSeek Reasoner (reasoning)' }
+      { id: 'deepseek-reasoner', label: 'DeepSeek Reasoner (reasoning)' },
+      { id: 'deepseek-v3-0324', label: 'DeepSeek V3 0324' },
+      { id: 'deepseek-v4-pro', label: 'DeepSeek V4 Pro' }
     ],
     defaultModel: 'deepseek-chat',
     validate(key) {

@@ -18,10 +18,10 @@ import {
   ServerError
 } from './shared.js';
 
-const TIMEOUT_ANALYZE_MS = 30_000;
-const TIMEOUT_REWRITE_MS = 60_000;
-const MAX_TOKENS_ANALYZE = 2048;
-const MAX_TOKENS_REWRITE = 4096;
+const TIMEOUT_ANALYZE_MS = 60_000;
+const TIMEOUT_REWRITE_MS = 120_000;
+const MAX_TOKENS_ANALYZE = 8192;
+const MAX_TOKENS_REWRITE = 8192;
 
 /**
  * Build a provider implementation against an OpenAI-compatible Chat
